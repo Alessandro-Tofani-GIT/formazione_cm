@@ -1,9 +1,9 @@
-##Ansible Playbook: Installazione Docker e Registry Privato
+## Ansible Playbook: Installazione Docker e Registry Privato
 
 Questo playbook Ansible automatizza l'installazione di Docker su un host Rocky Linux (o CentOS compatibile) e avvia un Docker registry privato senza autenticazione, esposto sulla porta 5000.
 
 ---
-## 📌 Funzionalità
+## Funzionalità
 
 - Installa Docker CE e le sue dipendenze
 - Configura il repository ufficiale Docker
@@ -15,7 +15,7 @@ Questo playbook Ansible automatizza l'installazione di Docker su un host Rocky L
 
 ---
 
-##Requisiti
+## Requisiti
 
 Vagrant installato (per creare e gestire la VM target)
 Ansible installato sulla macchina host (controllo)
