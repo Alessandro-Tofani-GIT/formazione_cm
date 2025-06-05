@@ -19,6 +19,8 @@ Questo playbook Ansible crea un registry locale e avvia due container utilizzand
 - **Rocky Linux o compatibile**
 - **Docker oppure Podman installato**
 
+---
+
 ## Variabili configurabili
 
 |        Variabile       | Descrizione                         |  Default                                   |
@@ -31,3 +33,22 @@ Questo playbook Ansible crea un registry locale e avvia due container utilizzand
 | second_container_image | Immagine del secondo container      | alessandrotofani/track3_step2:1.1          |
 | second_container_port  | Porta host per il secondo container | 4536                                       |
 
+---
+
+## Cosa fa il playbook
+
+1. Installa `pip` e `requests` se non presenti  
+2. Crea un registry container sulla porta `5000`  
+3. Avvia due container con immagini predefinite  
+4. Pubblica le porte SSH (`22`) su porte host diverse  
+5. Funziona con Docker o Podman, selezionato tramite variabile 
+
+
+---
+
+## Risultato
+
+- Registry accessibile su: **http://<IP_VM>:5000**
+- Container attivi e accessibili via SSH: 
+    - Porta **4797** → first_container
+    - Porta **4536** → second_container
