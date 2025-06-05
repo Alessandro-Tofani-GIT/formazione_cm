@@ -1,10 +1,10 @@
-# 🐳 Ansible Playbook: Creazione Registry e Container (Docker / Podman)
+# Ansible Playbook: Creazione Registry e Container (Docker / Podman)
 
 Questo playbook Ansible crea un registry locale e avvia due container utilizzando Docker o Podman, in modo parametrizzato e senza conflitto di porte.
 
 ---
 
-## 📦 Requisiti
+## Requisiti
 
 ### Macchina di controllo (dove esegui Ansible)
 
