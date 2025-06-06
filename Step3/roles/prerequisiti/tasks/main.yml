@@ -1,0 +1,27 @@
+
+- name: Assicura che pip sia installato
+  ansible.builtin.package:
+    name: python3-pip
+    state: present
+
+- name: Installa modulo requests
+  ansible.builtin.pip:
+    name: requests
+
+- name: set up docker
+  ansible.builtin.shell: |
+    dnf install -y yum-utils
+    yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+        
+
+- name: installa docker
+  package:
+    name:
+      - docker-ce
+    state: present
+
+- name: Start Docker and enable
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: yes

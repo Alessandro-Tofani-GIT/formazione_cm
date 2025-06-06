@@ -11,76 +11,19 @@
     second_container_image: "alessandrotofani/track3_step2:1.1"
     second_container_name: "rocky"
     second_container_port: 4536
+    image_name: "image_test"
+    image_tag: "1.2.2"
+    Dockerfile_PATH: "/Users/alessandro.tofani/Desktop/formazione_cm/Step3/roles/"
+    registry_host: "registry"
+    registry_port: "5000"
+  
+  roles:
+    - prerequisiti
+    - Containers
+    - Build_push
 
-  tasks:
-    - name: Assicura che pip sia installato
-      ansible.builtin.package:
-        name: python3-pip
-        state: present
 
-    - name: Installa modulo requests
-      ansible.builtin.pip:
-        name: requests
-
-    - name: Crea registry Docker
-      community.docker.docker_container:
-        name: registry
-        image: registry:latest
-        state: started
-        restart_policy: unless-stopped
-        published_ports:
-          - "5000:5000"
-        volumes:
-          - registry_data:/var/lib/registry
-      when: container_runtime == 'docker'
-
-    - name: Crea registry Podman
-      containers.podman.podman_container:
-        name: registry
-        image: registry:latest
-        state: started
-        restart_policy: unless-stopped
-        published_ports:
-          - "5000:5000"
-        volumes:
-          - registry_data:/var/lib/registry
-      when: container_runtime == 'podman'
-
-    - name: Crea primo container (Docker)
-      community.docker.docker_container:
-        name: "{{ first_container_name }}"
-        image: "{{ first_container_image }}"
-        state: started
-        published_ports:
-          - "{{ first_container_port }}:22"
-      when: container_runtime == 'docker'
-
-    - name: Crea primo container (Podman)
-      containers.podman.podman_container:
-        name: "{{ first_container_name }}"
-        image: "{{ first_container_image }}"
-        state: started
-        published_ports:
-          - "{{ first_container_port }}:22"
-      when: container_runtime == 'podman'
-
-    - name: Crea secondo container (Docker)
-      community.docker.docker_container:
-        name: "{{ second_container_name }}"
-        image: "{{ second_container_image }}"
-        state: started
-        published_ports:
-          - "{{ second_container_port }}:22"
-      when: container_runtime == 'docker'
-
-    - name: Crea secondo container (Podman)
-      containers.podman.podman_container:
-        name: "{{ second_container_name }}"
-        image: "{{ second_container_image }}"
-        state: started
-        published_ports:
-          - "{{ second_container_port }}:22"
-      when: container_runtime == 'podman'
+  
 
       
 

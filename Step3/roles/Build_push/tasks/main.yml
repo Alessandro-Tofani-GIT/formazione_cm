@@ -1,0 +1,39 @@
+---
+- name: Copia Dockerfile e sorgenti sulla VM
+  ansible.builtin.copy:
+    src: "{{Dockerfile_PATH}}"
+    dest: /tmp/build_context/
+    mode: '0755'
+     
+
+- name: Build immagine Docker
+  command: >
+    docker build -t {{image_name}}:{{image_tag}} /tmp/build_context/
+  when: container_runtime == 'docker'
+
+
+- name: Docker Tag immagine
+  command: >
+    docker tag {{image_name}}:{{image_tag}} localhost:{{registry_port}}/{{image_name}}:{{image_tag}}
+  when: container_runtime == 'docker'
+
+- name: Docker push immagine
+  command: >
+    docker push localhost:{{registry_port}}/{{image_name}}:{{image_tag}}
+  when: container_runtime == 'docker'
+
+- name: Build immagine container
+  command: >
+    podman build -t {{image_name}}:{{image_tag}} /tmp/build_context/
+  when: container_runtime == 'podman'
+
+
+- name: Docker Tag immagine
+  command: >
+    podman tag localhost:{{image_tag}} localhost:{{registry_port}}/{{image_name}}:{{image_tag}}
+  when: container_runtime == 'podman'
+
+- name: Docker push immagine
+  command: >
+    podman push localhost:{{registry_port}}/{{image_name}}:{{image_tag}}
+  when: container_runtime == 'podman'
