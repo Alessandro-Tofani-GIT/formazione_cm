@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  gather_facts: false
+
+  vars_files:
+    - secret-file.yml
+
+  tasks:
+    - name: Show the secret password
+      debug:
+        msg: "The secret password is {{ vars['id-password'] }}"
+    - name: Show User 
+      debug:
+        msg: "The secret User is {{ vars['id-user']}}"
