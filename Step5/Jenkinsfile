@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+
+    environment {
+        REPO_DIR = 'formazionesou_cm'
+        REPO_URL = 'https://github.com/Alessandro-Tofani-GIT/formazione_cm'
+        TAG_registry = "${BUILD_NUMBER}"
+        Container_Name = 'docker-test'
+    }
+
+    stages {
+        stage('Avvio container') {
+            steps {
+                script {
+                    sh """
+                        sudo docker images
+                        
+                        
+                        sudo docker ps -a
+                    """
+                }
+            }
+        }
+
+        stage('clone or pull') {
+            steps {
+                script {
+                    
+                    
+                    if (!fileExists(REPO_DIR)) {
+                        echo "Clonando il repo ${REPO_URL}"
+                        sh """
+                            git clone ${REPO_URL} ${REPO_DIR}
+                            cd ${REPO_DIR}
+                            ls -la && pwd
+                        """
+                    } else {
+                        
+                        echo "${TAG_registry}"
+                        echo "Pull Repository"
+                       
+                        sh """
+                            cd ${REPO_DIR}
+                            git pull origin main
+                            ls -la
+                            cd Step5
+                            echo "${TAG_registry}" 
+                            pwd
+                            cd Docker_Image && ls -la
+                            sudo docker build -f Dockerfile -t 172.17.0.1:5000/docker-in-docker:${TAG_registry} .
+                            sudo docker images
+                            sudo docker push 172.17.0.1:5000/docker-in-docker:${TAG_registry}
+
+                            sudo docker run -d  --name ${Container_Name} -p 2222:2222 172.17.0.1:5000/docker-in-docker:${TAG_registry}
+                            sudo docker ps -a
+
+                        """
+                    }
+                }
+            }
+        }
+    }
+}

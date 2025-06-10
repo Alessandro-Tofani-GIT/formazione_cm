@@ -1,27 +1,51 @@
 FROM docker:dind
-RUN apk update && apk add --no-cache openssh-server shadow 
-# Aggiunge l'utente ai sudoers per poter eseguire comandi come root senza password
-RUN  id -u genericuser 2>/dev/null || useradd -m -s /bin/bash genericuser
-RUN echo 'genericuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Installa OpenSSH server e altre utilità necessarie
+RUN apk update && apk add --no-cache \
+    openssh \
+    sudo \
+    bash \
+    shadow
+
+# Configura la password per genericuser (cambia 'password123' con quella che preferisci)
+
+# Crea l'utente genericuser
+RUN adduser -D -s /bin/bash genericuser
+RUN echo 'genericuser:password123' | chpasswd
+
+# Crea la directory .ssh per genericuser
+RUN mkdir -p /home/genericuser/.ssh
+RUN chown genericuser:genericuser /home/genericuser/.ssh
+RUN chmod 700 /home/genericuser/.ssh
+
+# Aggiungi genericuser al gruppo docker per permettere l'uso di Docker
+RUN addgroup genericuser docker
+
+# Configura SSH
 RUN ssh-keygen -A
-#Configura il server SSH disabilitando:
- # - accesso root
-# - autenticazione via password
-# Abilita:
-# - autenticazione tramite chiave pubblica
-# - consente solo l'utente 'genericuser' per connessione SSH
-RUN mkdir -p /var/run/sshd && \
-    sed -i 's/#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config && \
-    sed -i 's/#PasswordAuthentication no/PasswordAuthentication no/' /etc/ssh/sshd_config && \
-    sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config && \
-    echo 'AllowUsers genericuser' >> /etc/ssh/sshd_config
-# Crea la directory .ssh nella home dell'utente
-# Imposta i permessi corretti per sicurezza SSH
-RUN mkdir -p /home/genericuser/.ssh && \
-    chown -R genericuser:genericuser /home/genericuser/.ssh && \
-    chmod 700 /home/genericuser/.ssh 
-COPY id_key_genericuser.pub /home/genericuser/.ssh/authorized_keys
-RUN chown genericuser:genericuser /home/genericuser/.ssh/authorized_keys && chmod 600 /home/genericuser/.ssh/authorized_keys 
+RUN mkdir -p /var/run/sshd
+
+# Modifica la configurazione SSH per usare solo chiavi
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile/' /etc/ssh/sshd_config
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config
+
+# Copia la chiave pubblica (deve essere presente nella directory di build)
+COPY ssh_keys/id_rsa.pub /home/genericuser/.ssh/authorized_keys
+RUN chown genericuser:genericuser /home/genericuser/.ssh/authorized_keys
+RUN chmod 600 /home/genericuser/.ssh/authorized_keys
+
+RUN echo 'genericuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+# Crea lo script di avvio
+RUN echo '#!/bin/bash' > /start.sh && \
+    echo 'dockerd-entrypoint.sh &' >> /start.sh && \
+    echo 'sleep 5' >> /start.sh && \
+    echo '/usr/sbin/sshd -D' >> /start.sh && \
+    chmod +x /start.sh
+
+# Esponi la porta SSH
 EXPOSE 22
-# avvia il demone SSH in modalità foreground (non daemonizzato)
-CMD ["/usr/sbin/sshd", "-D"]
+
+# Avvia Docker daemon e SSH server
+CMD ["/start.sh"]
